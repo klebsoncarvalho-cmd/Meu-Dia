@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Meu Dia 24h — Rotina Simples & Colorida (PWA)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #fdf2f8 50%, #f0fdf4 100%);
+      color: #1e293b;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--thumb-color, #6366f1);
+      cursor: pointer;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    .mobile-preview-frame {
+      max-width: 412px !important;
+      margin: 1rem auto !important;
+      border: 10px solid #334155 !important;
+      border-radius: 2.5rem !important;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+      background: linear-gradient(135deg, #f0f4ff 0%, #fdf2f8 50%, #f0fdf4 100%);
+      overflow: hidden;
+    }
+  </style>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+</head>
+<body class="antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-xs w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Main App Wrapper -->
+  <div id="appContainer" class="min-h-screen flex flex-col transition-all duration-300">
+
+    <!-- Colorful Friendly Header -->
+    <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-indigo-100 shadow-sm px-4 py-3">
+      <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-xl shadow-md shadow-indigo-500/20">
+            ☀️
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg sm:text-xl font-extrabold text-slate-800 tracking-tight">Meu Dia <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-500">24h</span></h1>
+              <span id="dayTypeBadge" class="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-100 text-indigo-700">Seg a Sex • Rotina Base</span>
+            </div>
+            <p class="text-xs text-slate-500">Sono, Trabalho, Faculdade & Fim de Semana</p>
+          </div>
+        </div>
+
+        <!-- Simple View Switcher for Class Presentation -->
+        <div class="flex items-center gap-2">
+          <div class="inline-flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs">
+            <button id="btnViewAuto" type="button" class="px-3 py-1.5 rounded-xl font-bold bg-white text-indigo-600 shadow-sm transition">✨ Auto</button>
+            <button id="btnViewMobile" type="button" class="px-3 py-1.5 rounded-xl font-semibold text-slate-600 hover:text-slate-900 transition">📱 Celular</button>
+            <button id="btnViewDesktop" type="button" class="px-3 py-1.5 rounded-xl font-semibold text-slate-600 hover:text-slate-900 transition">💻 PC</button>
+          </div>
+          <button id="btnResetDay" type="button" class="px-3 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs border border-rose-200 transition" title="Restaurar horas padrão do dia">
+            ↺ Padrão
+          </button>
+          <button id="btnDownloadHtml" type="button" class="px-3.5 py-2 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow-sm shadow-emerald-500/20 transition" title="Baixar arquivo index.html pronto para o GitHub">
+            ⬇️ Baixar index.html
+          </button>
+        </div>
+      </div>
+
+      <!-- Day of Week Selector (Seg to Dom) -->
+      <div class="max-w-5xl mx-auto mt-3">
+        <div id="dayTabsContainer" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+      <!-- Top Summary Banner (Colorful & Clear) -->
+      <section id="statusBanner" class="rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white shadow-lg shadow-indigo-500/15 flex flex-wrap items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span id="bannerEmoji" class="text-2xl">🎯</span>
+            <h2 id="bannerTitle" class="text-base sm:text-lg font-extrabold">Segunda-feira — Rotina Semana (Sono, Trabalho e Faculdade)</h2>
+          </div>
+          <p id="bannerSubtitle" class="text-xs sm:text-sm text-indigo-100 font-medium">
+            Você planejou 20.0h principais e ainda tem 4.0h de Tempo Livre para descansar!
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/25">
+          <div class="text-right">
+            <span class="text-[11px] uppercase tracking-wider text-indigo-100 block font-semibold">Total Planejado</span>
+            <span id="bannerTotalHours" class="text-xl sm:text-2xl font-extrabold">20.0h <span class="text-sm font-normal text-indigo-100">/ 24h</span></span>
+          </div>
+          <button id="btnCopyWeekdayAll" type="button" class="px-3 py-2 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-xs shadow-sm transition">
+             Copiar p/ Seg–Sex
+          </button>
+        </div>
+      </section>
+
+      <!-- Responsive Grid: Left = Activities & Sliders | Right = Visual 24h Chart + Study Timer -->
+      <div id="mainGrid" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- LEFT COLUMN (7 cols on Desktop): Day's Activities -->
+        <section class="lg:col-span-7 space-y-4">
+
+          <!-- Section Header -->
+          <div class="flex items-center justify-between px-1">
+            <div>
+              <h3 id="activitiesSectionTitle" class="text-base sm:text-lg font-extrabold text-slate-800">Suas Horas do Dia</h3>
+              <p id="activitiesSectionHint" class="text-xs text-slate-500">De segunda a sexta: foco em Sono, Trabalho e Faculdade.</p>
+            </div>
+            <span id="freeHoursPill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+              ✨ 4.0h Livres
+            </span>
+          </div>
+
+          <!-- 24h Stacked Rainbow Bar -->
+          <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200/80 space-y-2.5">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+              <span>Barra das 24 Horas do Dia</span>
+              <span id="barLegendSummary" class="text-indigo-600">20.0h ocupadas • 4.0h livres</span>
+            </div>
+            <div id="rainbowBar" class="w-full h-6 rounded-2xl bg-slate-100 overflow-hidden flex p-1 gap-1 border border-slate-200/70">
+              <!-- Populated by JS -->
+            </div>
+            <div id="rainbowLegend" class="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-600 pt-1">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Activity Cards Container -->
+          <div id="activityCardsList" class="space-y-3.5">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Weekend / Extra Activity Adder Card (Highlighted on Saturday & Sunday!) -->
+          <div id="addActivityCard" class="bg-white rounded-3xl p-5 shadow-md border-2 border-dashed border-pink-300 space-y-4 transition-all">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg font-bold">➕</span>
+                <div>
+                  <h4 id="addCardTitle" class="text-sm sm:text-base font-extrabold text-slate-800">Adicionar Atividade ao Fim de Semana</h4>
+                  <p id="addCardSub" class="text-xs text-slate-500">Personalize seu Sábado e Domingo com lazer, passeios, esportes ou estudos extras!</p>
+                </div>
+              </div>
+              <span id="weekendHighlightTag" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-pink-100 text-pink-700">Liberado!</span>
+            </div>
+
+            <!-- 1-Click Quick Suggestions -->
+            <div>
+              <p class="text-xs font-bold text-slate-500 mb-2">Sugestões rápidas (toque para adicionar):</p>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" data-quick-name="Passeio & Lazer" data-quick-icon="🏖️" data-quick-color="#ec4899" data-quick-hours="3" class="quick-add-btn px-3 py-1.5 rounded-2xl bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 text-xs font-bold transition">🏖️ Passeio & Lazer (+3h)</button>
+                <button type="button" data-quick-name="Família & Amigos" data-quick-icon="👨‍👩‍👧" data-quick-color="#f97316" data-quick-hours="3" class="quick-add-btn px-3 py-1.5 rounded-2xl bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 text-xs font-bold transition">👨‍👩‍👧 Família & Amigos (+3h)</button>
+                <button type="button" data-quick-name="Esporte / Academia" data-quick-icon="🏃" data-quick-color="#10b981" data-quick-hours="1.5" class="quick-add-btn px-3 py-1.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition">🏃 Esporte (+1.5h)</button>
+                <button type="button" data-quick-name="Filmes & Séries" data-quick-icon="🍿" data-quick-color="#8b5cf6" data-quick-hours="2" class="quick-add-btn px-3 py-1.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold transition">🍿 Filmes & Séries (+2h)</button>
+                <button type="button" data-quick-name="Revisão da Graduação" data-quick-icon="📚" data-quick-color="#f59e0b" data-quick-hours="2" class="quick-add-btn px-3 py-1.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold transition">📚 Revisão Graduação (+2h)</button>
+              </div>
+            </div>
+
+            <!-- Custom Activity Form -->
+            <div class="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+              <select id="customIconSelect" aria-label="Escolher Emoji" class="sm:col-span-2 bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500">
+                <option value="🎉">🎉 Festa</option>
+                <option value="🏖️">🏖️ Lazer</option>
+                <option value="🏃">🏃 Treino</option>
+                <option value="📚">📚 Leitura</option>
+                <option value="🎮">🎮 Jogos</option>
+                <option value="🍽️">🍽️ Almoço</option>
+                <option value="🧘">🧘 Descanso</option>
+                <option value="🛒">🛒 Compras</option>
+              </select>
+
+              <input id="customNameInput" type="text" placeholder="Nome da atividade (ex: Praia, Churrasco, TCC...)" class="sm:col-span-5 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500" />
+
+              <select id="customHoursSelect" aria-label="Duração em horas" class="sm:col-span-2 bg-slate-50 border border-slate-200 rounded-2xl px-2.5 py-2.5 text-xs sm:text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500">
+                <option value="1">1.0h</option>
+                <option value="1.5">1.5h</option>
+                <option value="2" selected>2.0h</option>
+                <option value="3">3.0h</option>
+                <option value="4">4.0h</option>
+              </select>
+
+              <select id="customColorSelect" aria-label="Cor do cartão" class="sm:col-span-1 bg-slate-50 border border-slate-200 rounded-2xl px-2 py-2.5 text-xs font-bold text-slate-700">
+                <option value="#ec4899">🌸 Rosa</option>
+                <option value="#10b981">🌿 Verde</option>
+                <option value="#f97316">🍊 Laranja</option>
+                <option value="#06b6d4">💎 Azul</option>
+                <option value="#8b5cf6">🔮 Roxo</option>
+              </select>
+
+              <button id="btnAddCustomActivity" type="button" class="sm:col-span-2 py-2.5 px-4 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-pink-500/20 transition">
+                + Criar
+              </button>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN (5 cols on Desktop): Colorful Donut + Graduação Focus Timer + Weekly Summary -->
+        <section class="lg:col-span-5 space-y-5">
+
+          <!-- Card 1: Colorful 24h Pizza/Donut Chart -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-indigo-500">Visão Visual</span>
+                <h3 class="text-base font-extrabold text-slate-800">Divisão das 24 Horas</h3>
+              </div>
+              <span id="chartDayLabel" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">Segunda</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-5">
+              <div class="relative flex items-center justify-center shrink-0">
+                <svg id="donutSvg" viewBox="0 0 160 160" class="w-40 h-40 -rotate-90"></svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span id="donutTotalText" class="text-2xl font-extrabold text-slate-800">20.0h</span>
+                  <span id="donutSubText" class="text-[11px] font-bold text-emerald-600">+4.0h livres</span>
+                </div>
+              </div>
+
+              <div id="donutBreakdownList" class="flex-1 w-full space-y-2 text-xs">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Timer de Foco para Estudo (Nova Graduação) ou Trabalho -->
+          <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-3xl p-5 shadow-sm border border-amber-200/80 space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg shadow-sm">🎓</span>
+                <div>
+                  <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-700">Timer de Foco Rápido</span>
+                  <h3 class="text-base font-extrabold text-slate-800">Faculdade</h3>
+                </div>
+              </div>
+              <span id="timerBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">Pronto</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" data-mins="25" data-label="Pomodoro Graduação" class="timer-preset-btn py-1.5 px-2 rounded-xl bg-amber-500 text-white font-bold text-xs shadow-sm transition">25m Estudo</button>
+              <button type="button" data-mins="50" data-label="Aula / Leitura Longa" class="timer-preset-btn py-1.5 px-2 rounded-xl bg-white text-amber-800 border border-amber-200 font-semibold text-xs hover:bg-amber-100 transition">50m Aula</button>
+              <button type="button" data-mins="15" data-label="Revisão Rápida" class="timer-preset-btn py-1.5 px-2 rounded-xl bg-white text-amber-800 border border-amber-200 font-semibold text-xs hover:bg-amber-100 transition">15m Revisão</button>
+            </div>
+
+            <div class="bg-white rounded-2xl p-4 text-center border border-amber-200/60 shadow-inner">
+              <p id="timerCurrentLabel" class="text-xs font-bold text-amber-700 mb-0.5">Pomodoro Graduação</p>
+              <div id="timerClockDisplay" class="text-4xl font-extrabold text-slate-800 tracking-tight font-mono">25:00</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btnStartPauseTimer" type="button" class="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-amber-500/20 transition">
+                ▶ Iniciar Timer
+              </button>
+              <button id="btnResetTimer" type="button" class="py-2.5 px-4 rounded-2xl bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs sm:text-sm transition">
+                ↺ Reiniciar
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: Resumo da Semana (Seg a Dom) -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-600">Visão Semanal</span>
+                <h3 class="text-base font-extrabold text-slate-800">Resumo Seg a Dom</h3>
+              </div>
+              <span id="weeklyStudyTotal" class="px-2.5 py-1 rounded-xl bg-amber-100 text-amber-800 font-extrabold text-xs">🎓 20h Estudo/sem</span>
+            </div>
+            <div id="weeklyMiniBars" class="grid grid-cols-7 gap-1.5 pt-2">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'meu_dia_24h_colorido_v3';
+
+    const DAYS_INFO = [
+      { key: 'seg', short: 'Seg', full: 'Segunda-feira', isWeekend: false },
+      { key: 'ter', short: 'Ter', full: 'Terça-feira', isWeekend: false },
+      { key: 'qua', short: 'Qua', full: 'Quarta-feira', isWeekend: false },
+      { key: 'qui', short: 'Qui', full: 'Quinta-feira', isWeekend: false },
+      { key: 'sex', short: 'Sex', full: 'Sexta-feira', isWeekend: false },
+      { key: 'sab', short: 'Sáb', full: 'Sábado', isWeekend: true },
+      { key: 'dom', short: 'Dom', full: 'Domingo', isWeekend: true }
+    ];
+
+    function createWeekdayActivities() {
+      return [
+        { id: 'sleep', name: 'Sono & Descanso', icon: '😴', hours: 8.0, color: '#6366f1', bgLight: '#eef2ff', border: '#c7d2fe', locked: true },
+        { id: 'work', name: 'Trabalho', icon: '💼', hours: 8.0, color: '#0ea5e9', bgLight: '#f0f9ff', border: '#bae6fd', locked: true },
+        { id: 'study', name: 'Faculdade', icon: '🎓', hours: 4.0, color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', locked: true }
+      ];
+    }
+
+    function createSaturdayActivities() {
+      return [
+        { id: 'sleep', name: 'Sono & Descanso', icon: '😴', hours: 9.0, color: '#6366f1', bgLight: '#eef2ff', border: '#c7d2fe', locked: true },
+        { id: 'study', name: 'Revisão (Faculdade)', icon: '🎓', hours: 2.5, color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', locked: false },
+        { id: 'sat_leisure', name: 'Passeio & Lazer', icon: '🏖️', hours: 5.0, color: '#ec4899', bgLight: '#fdf2f8', border: '#fbcfe8', locked: false },
+        { id: 'sat_family', name: 'Família & Amigos', icon: '👨‍👩‍👧', hours: 3.5, color: '#10b981', bgLight: '#ecfdf5', border: '#a7f3d0', locked: false }
+      ];
+    }
+
+    function createSundayActivities() {
+      return [
+        { id: 'sleep', name: 'Sono & Descanso', icon: '😴', hours: 9.0, color: '#6366f1', bgLight: '#eef2ff', border: '#c7d2fe', locked: true },
+        { id: 'sun_family', name: 'Almoço & Família', icon: '🍽️', hours: 4.0, color: '#f97316', bgLight: '#fff7ed', border: '#fed7aa', locked: false },
+        { id: 'sun_hobby', name: 'Filmes, Séries & Hobby', icon: '🍿', hours: 4.0, color: '#8b5cf6', bgLight: '#f5f3ff', border: '#ddd6fe', locked: false },
+        { id: 'study', name: 'Leitura Leve (Faculdade)', icon: '📚', hours: 1.5, color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', locked: false }
+      ];
+    }
+
+    function getDefaultState() {
+      return {
+        selectedDay: 'seg',
+        viewMode: 'auto',
+        days: {
+          seg: createWeekdayActivities(),
+          ter: createWeekdayActivities(),
+          qua: createWeekdayActivities(),
+          qui: createWeekdayActivities(),
+          sex: createWeekdayActivities(),
+          sab: createSaturdayActivities(),
+          dom: createSundayActivities()
+        }
+      };
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+      return getDefaultState();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    let state = loadState();
+
+    // Timer state
+    let timer = {
+      running: false,
+      totalSeconds: 25 * 60,
+      remainingSeconds: 25 * 60,
+      label: 'Pomodoro Graduação',
+      intervalId: null
+    };
+
+    function showToast(text, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const styles = {
+        info: 'bg-indigo-600 text-white',
+        success: 'bg-emerald-600 text-white',
+        warn: 'bg-rose-600 text-white'
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-lg font-bold text-xs flex items-center justify-between gap-2 ${styles[type] || styles.info}`;
+      el.innerHTML = `<span>${text}</span><button type="button" class="opacity-80 hover:opacity-100">✕</button>`;
+      el.querySelector('button').addEventListener('click', () => el.remove());
+      container.appendChild(el);
+      setTimeout(() => {
+        if (el.parentNode) el.remove();
+      }, 3200);
+    }
+
+    function getDayInfo(dayKey) {
+      return DAYS_INFO.find(d => d.key === dayKey) || DAYS_INFO[0];
+    }
+
+    function getCurrentActivities() {
+      return state.days[state.selectedDay] || [];
+    }
+
+    function getTotalHours(activities) {
+      return +(activities.reduce((sum, a) => sum + Number(a.hours || 0), 0)).toFixed(1);
+    }
+
+    function getPaletteForColor(hex) {
+      const map = {
+        '#ec4899': { bgLight: '#fdf2f8', border: '#fbcfe8' },
+        '#10b981': { bgLight: '#ecfdf5', border: '#a7f3d0' },
+        '#f97316': { bgLight: '#fff7ed', border: '#fed7aa' },
+        '#06b6d4': { bgLight: '#ecfeff', border: '#a5f3fc' },
+        '#8b5cf6': { bgLight: '#f5f3ff', border: '#ddd6fe' },
+        '#f59e0b': { bgLight: '#fffbeb', border: '#fde68a' },
+        '#6366f1': { bgLight: '#eef2ff', border: '#c7d2fe' },
+        '#0ea5e9': { bgLight: '#f0f9ff', border: '#bae6fd' }
+      };
+      return map[hex] || { bgLight: '#f8fafc', border: '#e2e8f0' };
+    }
+
+    function renderAll() {
+      renderDayTabs();
+      renderBannerAndHeaders();
+      renderRainbowBar();
+      renderActivityCards();
+      renderDonutAndBreakdown();
+      renderWeeklyMiniSummary();
+      applyViewMode();
+      saveState();
+    }
+
+    function renderDayTabs() {
+      const container = document.getElementById('dayTabsContainer');
+      container.innerHTML = '';
+      DAYS_INFO.forEach(d => {
+        const active = d.key === state.selectedDay;
+        const total = getTotalHours(state.days[d.key] || []);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        if (active) {
+          btn.className = d.isWeekend
+            ? 'py-2 px-1 rounded-2xl font-extrabold text-xs sm:text-sm bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25 transition flex flex-col items-center'
+            : 'py-2 px-1 rounded-2xl font-extrabold text-xs sm:text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25 transition flex flex-col items-center';
+        } else {
+          btn.className = d.isWeekend
+            ? 'py-2 px-1 rounded-2xl font-bold text-xs sm:text-sm bg-pink-50/80 hover:bg-pink-100 text-pink-700 border border-pink-200/80 transition flex flex-col items-center'
+            : 'py-2 px-1 rounded-2xl font-bold text-xs sm:text-sm bg-slate-100/90 hover:bg-indigo-50 text-slate-700 border border-slate-200/80 transition flex flex-col items-center';
+        }
+        btn.innerHTML = `
+          <span>${d.short}</span>
+          <span class="text-[10px] font-semibold ${active ? 'text-white/90' : 'text-slate-400'}">${total}h</span>
+        `;
+        btn.addEventListener('click', () => {
+          state.selectedDay = d.key;
+          renderAll();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderBannerAndHeaders() {
+      const dayInfo = getDayInfo(state.selectedDay);
+      const activities = getCurrentActivities();
+      const total = getTotalHours(activities);
+      const free = +(24 - total).toFixed(1);
+
+      const badge = document.getElementById('dayTypeBadge');
+      const banner = document.getElementById('statusBanner');
+      const emoji = document.getElementById('bannerEmoji');
+      const title = document.getElementById('bannerTitle');
+      const subtitle = document.getElementById('bannerSubtitle');
+      const totalEl = document.getElementById('bannerTotalHours');
+      const copyBtn = document.getElementById('btnCopyWeekdayAll');
+      const freePill = document.getElementById('freeHoursPill');
+      const addCard = document.getElementById('addActivityCard');
+      const addTitle = document.getElementById('addCardTitle');
+      const addSub = document.getElementById('addCardSub');
+      const weekendTag = document.getElementById('weekendHighlightTag');
+
+      totalEl.innerHTML = `${total.toFixed(1)}h <span class="text-sm font-normal opacity-85">/ 24h</span>`;
+
+      if (dayInfo.isWeekend) {
+        badge.className = 'px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-pink-100 text-pink-700';
+        badge.textContent = 'Fim de Semana • Livre & Customizável';
+        copyBtn.textContent = 'Copiar Sáb ↔ Dom';
+        addCard.className = 'bg-white rounded-3xl p-5 shadow-md border-2 border-pink-400 space-y-4 transition-all ring-4 ring-pink-100';
+        addTitle.textContent = `Adicionar Atividade para ${dayInfo.full}`;
+        addSub.textContent = 'No sábado e domingo você pode adicionar quantas atividades quiser!';
+        weekendTag.textContent = 'Fim de Semana 🎉';
+        weekendTag.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-pink-500 text-white';
+        document.getElementById('activitiesSectionHint').textContent = 'Fim de semana flexível: ajuste ou crie novas atividades abaixo.';
+      } else {
+        badge.className = 'px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-100 text-indigo-700';
+        badge.textContent = 'Seg a Sex • Sono, Trabalho & Faculdade';
+        copyBtn.textContent = 'Aplicar p/ Seg–Sex';
+        addCard.className = 'bg-white/90 rounded-3xl p-5 shadow-sm border-2 border-dashed border-indigo-200 space-y-4 transition-all';
+        addTitle.textContent = `Adicionar Atividade Extra (${dayInfo.short})`;
+        addSub.textContent = 'Sua base de Seg a Sex já tem Sono, Trabalho e Faculdade. Adicione extras se precisar.';
+        weekendTag.textContent = 'Opcional';
+        weekendTag.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700';
+        document.getElementById('activitiesSectionHint').textContent = 'De segunda a sexta: foco em Sono, Trabalho e Faculdade.';
+      }
+
+      if (total > 24) {
+        const over = +(total - 24).toFixed(1);
+        banner.className = 'rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-rose-500 via-red-500 to-orange-500 text-white shadow-lg flex flex-wrap items-center justify-between gap-4';
+        emoji.textContent = '⚠️';
+        title.textContent = `${dayInfo.full} — Passou de 24 horas!`;
+        subtitle.textContent = `Você colocou ${total.toFixed(1)}h (passou +${over}h do limite do dia). Diminua um pouquinho nas barras abaixo.`;
+        freePill.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200';
+        freePill.textContent = `⚠️ Passou +${over}h`;
+      } else if (Math.abs(free) < 0.05) {
+        banner.className = 'rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 text-white shadow-lg flex flex-wrap items-center justify-between gap-4';
+        emoji.textContent = '✅';
+        title.textContent = `${dayInfo.full} — 24 Horas Completas!`;
+        subtitle.textContent = 'Todas as 24 horas do seu dia estão distribuídas com equilíbrio.';
+        freePill.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200';
+        freePill.textContent = '✅ 24h Fechadas';
+      } else {
+        banner.className = dayInfo.isWeekend
+          ? 'rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white shadow-lg flex flex-wrap items-center justify-between gap-4'
+          : 'rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white shadow-lg flex flex-wrap items-center justify-between gap-4';
+        emoji.textContent = dayInfo.isWeekend ? '🎉' : '☀️';
+        title.textContent = `${dayInfo.full} — ${dayInfo.isWeekend ? 'Fim de Semana Flexível' : 'Rotina da Semana'}`;
+        subtitle.textContent = `Você alocou ${total.toFixed(1)}h e ainda tem ${free.toFixed(1)}h livres para descanso, lazer ou imprevistos.`;
+        freePill.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200';
+        freePill.textContent = `✨ ${free.toFixed(1)}h Livres`;
+      }
+    }
+
+    function renderRainbowBar() {
+      const activities = getCurrentActivities();
+      const total = getTotalHours(activities);
+      const free = Math.max(0, +(24 - total).toFixed(1));
+      const denom = Math.max(24, total);
+
+      document.getElementById('barLegendSummary').textContent = `${total.toFixed(1)}h planejadas • ${free.toFixed(1)}h livres`;
+
+      const bar = document.getElementById('rainbowBar');
+      const legend = document.getElementById('rainbowLegend');
+      bar.innerHTML = '';
+      legend.innerHTML = '';
+
+      activities.forEach(act => {
+        const pct = Math.max(0, (act.hours / denom) * 100);
+        if (pct > 0) {
+          const seg = document.createElement('div');
+          seg.className = 'h-full rounded-xl transition-all duration-300';
+          seg.style.width = `${pct}%`;
+          seg.style.backgroundColor = act.color;
+          seg.title = `${act.name}: ${act.hours.toFixed(1)}h`;
+          bar.appendChild(seg);
+        }
+
+        const leg = document.createElement('span');
+        leg.className = 'inline-flex items-center gap-1.5';
+        leg.innerHTML = `<span class="w-3 h-3 rounded-full inline-block" style="background:${act.color}"></span><span>${act.icon} ${act.name} (${act.hours.toFixed(1)}h)</span>`;
+        legend.appendChild(leg);
+      });
+
+      if (free > 0) {
+        const freePct = (free / denom) * 100;
+        const freeSeg = document.createElement('div');
+        freeSeg.className = 'h-full rounded-xl bg-slate-200 transition-all duration-300';
+        freeSeg.style.width = `${freePct}%`;
+        freeSeg.title = `Tempo Livre: ${free.toFixed(1)}h`;
+        bar.appendChild(freeSeg);
+
+        const freeLeg = document.createElement('span');
+        freeLeg.className = 'inline-flex items-center gap-1.5 text-slate-400';
+        freeLeg.innerHTML = `<span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span><span>✨ Livre (${free.toFixed(1)}h)</span>`;
+        legend.appendChild(freeLeg);
+      }
+    }
+
+    function renderActivityCards() {
+      const list = document.getElementById('activityCardsList');
+      list.innerHTML = '';
+      const activities = getCurrentActivities();
+
+      activities.forEach(act => {
+        const pct = Math.round((act.hours / 24) * 100);
+        const card = document.createElement('div');
+        card.className = 'rounded-3xl p-4 sm:p-5 shadow-sm transition-all border-2 bg-white';
+        card.style.borderColor = act.border || '#e2e8f0';
+        card.style.backgroundColor = act.bgLight || '#ffffff';
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shadow-sm text-white font-bold" style="background-color: ${act.color}">
+                ${act.icon}
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base font-extrabold text-slate-800">${act.name}</h4>
+                <span class="text-xs font-semibold text-slate-500">${pct}% do seu dia</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button type="button" data-act-step="${act.id}" data-delta="-0.5" class="w-9 h-9 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-base border border-slate-200 shadow-sm transition">-</button>
+              <div class="min-w-[64px] text-center px-2 py-1 rounded-2xl bg-white border border-slate-200 font-extrabold text-base sm:text-lg" style="color: ${act.color}">
+                ${act.hours.toFixed(1)}h
+              </div>
+              <button type="button" data-act-step="${act.id}" data-delta="0.5" class="w-9 h-9 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-base border border-slate-200 shadow-sm transition">+</button>
+              ${!act.locked ? `<button type="button" data-act-del="${act.id}" class="ml-1 w-8 h-9 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold text-xs border border-rose-200 transition" title="Remover atividade">✕</button>` : ''}
+            </div>
+          </div>
+
+          <input type="range" min="0" max="14" step="0.5" value="${act.hours}" data-act-slider="${act.id}" aria-label="${act.name}" style="--thumb-color: ${act.color}" class="w-full" />
+        `;
+        list.appendChild(card);
+      });
+
+      list.querySelectorAll('[data-act-slider]').forEach(slider => {
+        slider.addEventListener('input', (e) => {
+          const id = e.target.getAttribute('data-act-slider');
+          const val = parseFloat(e.target.value);
+          const item = getCurrentActivities().find(a => a.id === id);
+          if (item) {
+            item.hours = val;
+            renderAll();
+          }
+        });
+      });
+
+      list.querySelectorAll('[data-act-step]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-act-step');
+          const delta = parseFloat(btn.getAttribute('data-delta'));
+          const item = getCurrentActivities().find(a => a.id === id);
+          if (item) {
+            item.hours = Math.max(0, Math.min(16, +(item.hours + delta).toFixed(1)));
+            renderAll();
+          }
+        });
+      });
+
+      list.querySelectorAll('[data-act-del]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-act-del');
+          state.days[state.selectedDay] = getCurrentActivities().filter(a => a.id !== id);
+          showToast('Atividade removida do dia.', 'info');
+          renderAll();
+        });
+      });
+    }
+
+    function renderDonutAndBreakdown() {
+      const dayInfo = getDayInfo(state.selectedDay);
+      document.getElementById('chartDayLabel').textContent = dayInfo.full;
+
+      const activities = getCurrentActivities();
+      const total = getTotalHours(activities);
+      const free = +(24 - total).toFixed(1);
+
+      const svg = document.getElementById('donutSvg');
+      svg.innerHTML = '';
+      const radius = 58;
+      const circumference = 2 * Math.PI * radius;
+
+      // Track circle
+      const track = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      track.setAttribute('cx', '80');
+      track.setAttribute('cy', '80');
+      track.setAttribute('r', String(radius));
+      track.setAttribute('fill', 'transparent');
+      track.setAttribute('stroke', '#f1f5f9');
+      track.setAttribute('stroke-width', '20');
+      svg.appendChild(track);
+
+      const denom = Math.max(24, total, 0.1);
+      let acc = 0;
+      activities.forEach(act => {
+        const ratio = act.hours / denom;
+        if (ratio <= 0) return;
+        const dash = ratio * circumference;
+        const offset = -acc * circumference;
+        acc += ratio;
+
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', '80');
+        c.setAttribute('cy', '80');
+        c.setAttribute('r', String(radius));
+        c.setAttribute('fill', 'transparent');
+        c.setAttribute('stroke', act.color);
+        c.setAttribute('stroke-width', '20');
+        c.setAttribute('stroke-dasharray', `${dash} ${circumference}`);
+        c.setAttribute('stroke-dashoffset', String(offset));
+        svg.appendChild(c);
+      });
+
+      document.getElementById('donutTotalText').textContent = `${total.toFixed(1)}h`;
+      const sub = document.getElementById('donutSubText');
+      if (free > 0) {
+        sub.textContent = `+${free.toFixed(1)}h livres`;
+        sub.className = 'text-[11px] font-bold text-emerald-600';
+      } else if (Math.abs(free) < 0.05) {
+        sub.textContent = '24h Fechadas!';
+        sub.className = 'text-[11px] font-bold text-indigo-600';
+      } else {
+        sub.textContent = `Passou +${Math.abs(free).toFixed(1)}h`;
+        sub.className = 'text-[11px] font-bold text-rose-600';
+      }
+
+      const list = document.getElementById('donutBreakdownList');
+      list.innerHTML = '';
+      activities.forEach(act => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between px-3 py-2 rounded-2xl bg-slate-50 border border-slate-100';
+        row.innerHTML = `
+          <span class="flex items-center gap-2 font-bold text-slate-700 truncate">
+            <span class="w-3 h-3 rounded-full shrink-0" style="background:${act.color}"></span>
+            <span class="truncate">${act.icon} ${act.name}</span>
+          </span>
+          <span class="font-extrabold text-slate-800 ml-2">${act.hours.toFixed(1)}h</span>
+        `;
+        list.appendChild(row);
+      });
+
+      if (free > 0) {
+        const freeRow = document.createElement('div');
+        freeRow.className = 'flex items-center justify-between px-3 py-2 rounded-2xl bg-emerald-50/70 border border-emerald-100';
+        freeRow.innerHTML = `
+          <span class="flex items-center gap-2 font-bold text-emerald-700">
+            <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+            <span>✨ Tempo Livre / Descanso</span>
+          </span>
+          <span class="font-extrabold text-emerald-700">${free.toFixed(1)}h</span>
+        `;
+        list.appendChild(freeRow);
+      }
+    }
+
+    function renderWeeklyMiniSummary() {
+      const container = document.getElementById('weeklyMiniBars');
+      container.innerHTML = '';
+      let totalStudyWeek = 0;
+
+      DAYS_INFO.forEach(d => {
+        const acts = state.days[d.key] || [];
+        const studyAct = acts.find(a => a.id === 'study' || a.name.toLowerCase().includes('faculdade') || a.name.toLowerCase().includes('graduação') || a.name.toLowerCase().includes('estudo'));
+        if (studyAct) totalStudyWeek += Number(studyAct.hours || 0);
+
+        const col = document.createElement('button');
+        col.type = 'button';
+        const isSelected = d.key === state.selectedDay;
+        col.className = `p-2 rounded-2xl border text-center transition flex flex-col items-center gap-1.5 ${
+          isSelected ? 'bg-indigo-50 border-indigo-400 shadow-sm' : 'bg-slate-50 border-slate-200/70 hover:bg-slate-100'
+        }`;
+
+        let stackHtml = '';
+        acts.forEach(a => {
+          const hPct = Math.min(100, (a.hours / 24) * 100);
+          stackHtml += `<div style="height:${hPct}%; background:${a.color}" class="w-full first:rounded-t-full last:rounded-b-full"></div>`;
+        });
+
+        col.innerHTML = `
+          <span class="text-[11px] font-extrabold ${d.isWeekend ? 'text-pink-600' : 'text-slate-700'}">${d.short}</span>
+          <div class="w-4 h-16 rounded-full bg-slate-200 overflow-hidden flex flex-col justify-end p-0.5 gap-0.5">
+            ${stackHtml}
+          </div>
+          <span class="text-[10px] font-bold text-slate-500">${getTotalHours(acts)}h</span>
+        `;
+        col.addEventListener('click', () => {
+          state.selectedDay = d.key;
+          renderAll();
+        });
+        container.appendChild(col);
+      });
+
+      document.getElementById('weeklyStudyTotal').textContent = `🎓 ${totalStudyWeek.toFixed(1)}h Faculdade/sem`;
+    }
+
+    function applyViewMode() {
+      const app = document.getElementById('appContainer');
+      const mainGrid = document.getElementById('mainGrid');
+      const bAuto = document.getElementById('btnViewAuto');
+      const bMob = document.getElementById('btnViewMobile');
+      const bDesk = document.getElementById('btnViewDesktop');
+
+      [bAuto, bMob, bDesk].forEach(b => {
+        b.className = 'px-3 py-1.5 rounded-xl font-semibold text-slate-600 hover:text-slate-900 transition';
+      });
+
+      if (state.viewMode === 'mobile') {
+        app.classList.add('mobile-preview-frame');
+        mainGrid.className = 'grid grid-cols-1 gap-5 items-start';
+        bMob.className = 'px-3 py-1.5 rounded-xl font-bold bg-white text-indigo-600 shadow-sm transition';
+      } else if (state.viewMode === 'desktop') {
+        app.classList.remove('mobile-preview-frame');
+        mainGrid.className = 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-start';
+        bDesk.className = 'px-3 py-1.5 rounded-xl font-bold bg-white text-indigo-600 shadow-sm transition';
+      } else {
+        app.classList.remove('mobile-preview-frame');
+        mainGrid.className = 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-start';
+        bAuto.className = 'px-3 py-1.5 rounded-xl font-bold bg-white text-indigo-600 shadow-sm transition';
+      }
+    }
+
+    function addActivityToCurrentDay(name, icon, color, hours) {
+      const palette = getPaletteForColor(color);
+      state.days[state.selectedDay].push({
+        id: 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name,
+        icon,
+        hours: Number(hours),
+        color,
+        bgLight: palette.bgLight,
+        border: palette.border,
+        locked: false
+      });
+      showToast(`${icon} "${name}" (${hours}h) adicionada!`, 'success');
+      renderAll();
+    }
+
+    // Timer helpers
+    function formatMMSS(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function renderTimer() {
+      document.getElementById('timerClockDisplay').textContent = formatMMSS(timer.remainingSeconds);
+      document.getElementById('timerCurrentLabel').textContent = timer.label;
+      const badge = document.getElementById('timerBadge');
+      const btn = document.getElementById('btnStartPauseTimer');
+      if (timer.running) {
+        badge.textContent = 'Estudando...';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-white animate-pulse';
+        btn.textContent = '⏸ Pausar';
+      } else {
+        badge.textContent = 'Pronto';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800';
+        btn.textContent = timer.remainingSeconds < timer.totalSeconds ? '▶ Retomar' : '▶ Iniciar Timer';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // View Mode Buttons
+      document.getElementById('btnViewAuto').addEventListener('click', () => {
+        state.viewMode = 'auto';
+        renderAll();
+      });
+      document.getElementById('btnViewMobile').addEventListener('click', () => {
+        state.viewMode = 'mobile';
+        showToast('Visualização Celular ativada!', 'info');
+        renderAll();
+      });
+      document.getElementById('btnViewDesktop').addEventListener('click', () => {
+        state.viewMode = 'desktop';
+        showToast('Visualização PC ativada!', 'info');
+        renderAll();
+      });
+
+      // Download index.html directly from inside the app
+      document.getElementById('btnDownloadHtml').addEventListener('click', () => {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast('Arquivo index.html baixado! Pronto para subir no GitHub.', 'success');
+      });
+
+      // Reset Day
+      document.getElementById('btnResetDay').addEventListener('click', () => {
+        const d = getDayInfo(state.selectedDay);
+        if (d.key === 'sab') state.days.sab = createSaturdayActivities();
+        else if (d.key === 'dom') state.days.dom = createSundayActivities();
+        else state.days[d.key] = createWeekdayActivities();
+        showToast(`Horas de ${d.full} restauradas!`, 'info');
+        renderAll();
+      });
+
+      // Copy current schedule to all weekdays (or Sat <-> Sun)
+      document.getElementById('btnCopyWeekdayAll').addEventListener('click', () => {
+        const d = getDayInfo(state.selectedDay);
+        const clone = JSON.parse(JSON.stringify(getCurrentActivities()));
+        if (d.isWeekend) {
+          const target = d.key === 'sab' ? 'dom' : 'sab';
+          state.days[target] = clone;
+          showToast('Atividades copiadas para o outro dia do fim de semana!', 'success');
+        } else {
+          ['seg', 'ter', 'qua', 'qui', 'sex'].forEach(k => {
+            state.days[k] = JSON.parse(JSON.stringify(clone));
+          });
+          showToast('Rotina aplicada de Segunda a Sexta!', 'success');
+        }
+        renderAll();
+      });
+
+      // Quick Add Suggestion Buttons
+      document.querySelectorAll('.quick-add-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const name = btn.getAttribute('data-quick-name');
+          const icon = btn.getAttribute('data-quick-icon');
+          const color = btn.getAttribute('data-quick-color');
+          const hours = parseFloat(btn.getAttribute('data-quick-hours'));
+          addActivityToCurrentDay(name, icon, color, hours);
+        });
+      });
+
+      // Custom Activity Creation
+      const handleAddCustom = () => {
+        const nameInput = document.getElementById('customNameInput');
+        const name = nameInput.value.trim() || 'Nova Atividade';
+        const icon = document.getElementById('customIconSelect').value;
+        const hours = parseFloat(document.getElementById('customHoursSelect').value || '2');
+        const color = document.getElementById('customColorSelect').value;
+        addActivityToCurrentDay(name, icon, color, hours);
+        nameInput.value = '';
+      };
+
+      document.getElementById('btnAddCustomActivity').addEventListener('click', handleAddCustom);
+      document.getElementById('customNameInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleAddCustom();
+      });
+
+      // Timer Presets & Controls
+      document.querySelectorAll('.timer-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (timer.intervalId) {
+            clearInterval(timer.intervalId);
+            timer.intervalId = null;
+          }
+          timer.running = false;
+          const mins = parseInt(btn.getAttribute('data-mins'), 10);
+          timer.totalSeconds = mins * 60;
+          timer.remainingSeconds = mins * 60;
+          timer.label = btn.getAttribute('data-label');
+
+          document.querySelectorAll('.timer-preset-btn').forEach(b => {
+            b.className = 'timer-preset-btn py-1.5 px-2 rounded-xl bg-white text-amber-800 border border-amber-200 font-semibold text-xs hover:bg-amber-100 transition';
+          });
+          btn.className = 'timer-preset-btn py-1.5 px-2 rounded-xl bg-amber-500 text-white font-bold text-xs shadow-sm transition';
+          if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+      renderTimer();
+        });
+      });
+
+      document.getElementById('btnStartPauseTimer').addEventListener('click', () => {
+        if (timer.running) {
+          clearInterval(timer.intervalId);
+          timer.intervalId = null;
+          timer.running = false;
+        } else {
+          timer.running = true;
+          timer.intervalId = setInterval(() => {
+            if (timer.remainingSeconds > 0) {
+              timer.remainingSeconds -= 1;
+              renderTimer();
+            } else {
+              clearInterval(timer.intervalId);
+              timer.intervalId = null;
+              timer.running = false;
+              timer.remainingSeconds = timer.totalSeconds;
+              showToast('🎓 Sessão de Estudo da Graduação concluída!', 'success');
+              renderTimer();
+            }
+          }, 1000);
+        }
+        renderTimer();
+      });
+
+      document.getElementById('btnResetTimer').addEventListener('click', () => {
+        if (timer.intervalId) {
+          clearInterval(timer.intervalId);
+          timer.intervalId = null;
+        }
+        timer.running = false;
+        timer.remainingSeconds = timer.totalSeconds;
+        renderTimer();
+      });
+
+      renderTimer();
+      renderAll();
+    });
+  </script>
+</body>
+</html>

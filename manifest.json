@@ -1,0 +1,25 @@
+{
+  "name": "Meu Dia 24h — Rotina Simples & Colorida",
+  "short_name": "MeuDia24h",
+  "description": "PWA simples e colorido para organizar as 24 horas do dia: Sono, Trabalho, Estudo (Nova Graduação) de segunda a sexta e atividades livres no sábado e domingo.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f0f4ff",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
