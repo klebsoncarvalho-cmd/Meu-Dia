@@ -17,16 +17,3 @@ Aplicativo Web Progressivo (**PWA**) desenvolvido com arquitetura **Single Codeb
    - **Linha do Tempo de Agenda** com simulação de sincronização Google/Outlook Calendar.
    - **Planejamento para o Dia Seguinte** com persistência offline via `localStorage`.
 
-## 🚀 Como Publicar no GitHub Pages (Passo a Passo)
-
-1. Crie um novo repositório público no GitHub (ex.: `chronos24-pwa`).
-2. Faça o upload de todos os arquivos desta pasta na raiz do repositório:
-   - `index.html`
-   - `manifest.json`
-   - `sw.js`
-   - `icon-192.png`
-   - `icon-512.png`
-   - `README.md`
-3. No repositório do GitHub, clique em **Settings** (Configurações) → **Pages** (no menu lateral esquerdo).
-4. Em **Build and deployment** → **Branch**, selecione `main` (ou `master`), mantenha a pasta `/(root)` e clique em **Save**.
-5. Aguarde cerca de 1 minuto e acesse o link gerado (`https://seu-usuario.github.io/chronos24-pwa/`) no computador da faculdade ou no celular!
